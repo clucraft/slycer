@@ -189,10 +189,10 @@ function buildBambuProjectSettings(s: PrintSettings): Record<string, unknown> {
   const zHop = String(s.z_hop || 0.4)
   const infillDensity = String(s.infill_density || 15) + '%'
 
-  // Print settings
-  config.layer_height = Number(s.layer_height) || 0.2
-  config.initial_layer_print_height = Number(s.first_layer_height) || 0.2
-  config.wall_loops = Number(s.wall_count) || 4
+  // Print settings — all must be strings to match Bambu Studio's format
+  config.layer_height = String(Number(s.layer_height) || 0.2)
+  config.initial_layer_print_height = String(Number(s.first_layer_height) || 0.2)
+  config.wall_loops = String(Number(s.wall_count) || 4)
   config.top_shell_layers = String(Number(s.top_layers) || 5)
   config.bottom_shell_layers = String(Number(s.bottom_layers) || 5)
   config.sparse_infill_density = infillDensity
