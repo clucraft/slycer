@@ -68,9 +68,17 @@ function buildBambuOrcaZip(
   // Main 3dmodel.model (references object file)
   zip.folder('3D')!.file('3dmodel.model', `<?xml version="1.0" encoding="UTF-8"?>
 <model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p">
- <metadata name="Application">Slycer</metadata>
+ <metadata name="Application">BambuStudio-01.10.00.00</metadata>
  <metadata name="BambuStudio:3mfVersion">1</metadata>
+ <metadata name="Copyright"></metadata>
  <metadata name="CreationDate">${new Date().toISOString().split('T')[0]}</metadata>
+ <metadata name="Description"></metadata>
+ <metadata name="Designer"></metadata>
+ <metadata name="DesignerCover"></metadata>
+ <metadata name="License"></metadata>
+ <metadata name="ModificationDate">${new Date().toISOString().split('T')[0]}</metadata>
+ <metadata name="Origin"></metadata>
+ <metadata name="Title"></metadata>
  <resources>
   <object id="2" p:UUID="00000001-61cb-4c03-9d28-80fed5dfa1dc" type="model">
    <components>
