@@ -3,20 +3,50 @@ import { Upload, Download, Loader2, AlertCircle, CheckCircle2 } from 'lucide-rea
 import axios from 'axios'
 
 const PRINTERS = [
+  // Bambu Lab
+  { value: 'bambu-x2d', label: 'Bambu Lab X2D' },
   { value: 'bambu-x1c', label: 'Bambu Lab X1 Carbon' },
   { value: 'bambu-x1e', label: 'Bambu Lab X1E' },
+  { value: 'bambu-p2s', label: 'Bambu Lab P2S' },
   { value: 'bambu-p1s', label: 'Bambu Lab P1S' },
   { value: 'bambu-p1p', label: 'Bambu Lab P1P' },
   { value: 'bambu-a1', label: 'Bambu Lab A1' },
   { value: 'bambu-a1-mini', label: 'Bambu Lab A1 Mini' },
+  { value: 'bambu-h2c', label: 'Bambu Lab H2C' },
+  { value: 'bambu-h2d', label: 'Bambu Lab H2D' },
+  { value: 'bambu-h2s', label: 'Bambu Lab H2S' },
+  // Prusa
   { value: 'prusa-mk4s', label: 'Prusa MK4S' },
   { value: 'prusa-mk3s', label: 'Prusa MK3S+' },
   { value: 'prusa-mini', label: 'Prusa Mini+' },
   { value: 'prusa-xl', label: 'Prusa XL' },
+  { value: 'prusa-core-one', label: 'Prusa CORE One' },
+  { value: 'prusa-pro-ht90', label: 'Prusa Pro HT90' },
+  // Creality
+  { value: 'creality-k2-pro', label: 'Creality K2 Pro' },
+  { value: 'creality-k2-plus', label: 'Creality K2 Plus' },
   { value: 'creality-k1-max', label: 'Creality K1 Max' },
+  { value: 'creality-k1c', label: 'Creality K1C' },
   { value: 'creality-ender3-v3', label: 'Creality Ender-3 V3' },
+  { value: 'creality-sermoon-x1', label: 'Creality Sermoon X1' },
+  // Voron
   { value: 'voron-2.4', label: 'Voron 2.4' },
   { value: 'voron-trident', label: 'Voron Trident' },
+  { value: 'voron-v0.2', label: 'Voron V0.2' },
+  { value: 'voron-switchwire', label: 'Voron Switchwire' },
+  { value: 'voron-legacy', label: 'Voron Legacy' },
+  // Elegoo
+  { value: 'elegoo-centauri-carbon-2', label: 'Elegoo Centauri Carbon 2' },
+  { value: 'elegoo-centauri-carbon', label: 'Elegoo Centauri Carbon' },
+  { value: 'elegoo-neptune-4-max', label: 'Elegoo Neptune 4 Max' },
+  { value: 'elegoo-neptune-4-plus', label: 'Elegoo Neptune 4 Plus' },
+  { value: 'elegoo-neptune-4-pro', label: 'Elegoo Neptune 4 Pro' },
+  { value: 'elegoo-neptune-4', label: 'Elegoo Neptune 4' },
+  { value: 'elegoo-orangestorm-giga', label: 'Elegoo OrangeStorm Giga' },
+  // AnkerMake
+  { value: 'ankermake-m5-pro', label: 'AnkerMake M5 Pro' },
+  { value: 'ankermake-m5', label: 'AnkerMake M5' },
+  { value: 'ankermake-m5c', label: 'AnkerMake M5C' },
 ]
 
 const NOZZLE_SIZES = [
