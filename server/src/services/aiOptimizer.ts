@@ -23,7 +23,7 @@ export async function generateSettings(request: OptimizeRequest): Promise<PrintS
 
   const response = await axios.post(`${OLLAMA_URL}/api/generate`, {
     model: OLLAMA_MODEL,
-    prompt,
+    prompt: `/no_think\n${prompt}`,
     stream: false,
     format: 'json',
     options: {
@@ -34,15 +34,21 @@ export async function generateSettings(request: OptimizeRequest): Promise<PrintS
     timeout: 300000, // 5 min timeout for slow inference
   })
 
+  // Qwen3.5 returns "thinking" and "response" as separate fields
   const rawText: string = response.data.response || ''
-  console.log('Ollama raw response length:', rawText.length)
-  console.log('Ollama raw response (first 500 chars):', rawText.substring(0, 500))
+  const thinkingText: string = response.data.thinking || ''
+  console.log('Ollama response length:', rawText.length)
+  console.log('Ollama thinking length:', thinkingText.length)
+  console.log('Ollama response (first 500 chars):', rawText.substring(0, 500))
 
-  if (!rawText.trim()) {
+  // Use response field first, fall back to thinking field
+  const textToParse = rawText.trim() || thinkingText.trim()
+
+  if (!textToParse) {
     throw new Error('Ollama returned an empty response')
   }
 
-  const settings = extractJSON(rawText)
+  const settings = extractJSON(textToParse)
   return settings
 }
 
