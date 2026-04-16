@@ -1,7 +1,13 @@
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import JSZip from 'jszip'
 import type { PrintSettings } from './aiOptimizer.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const bambuTemplate: Record<string, unknown> = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'bambu-template.json'), 'utf8')
+)
 
 interface Build3MFOptions {
   stlPath: string
@@ -167,68 +173,71 @@ ${mesh.triangles.map(t => `     <triangle v1="${t.v1}" v2="${t.v2}" v3="${t.v3}"
 }
 
 function buildBambuProjectSettings(s: PrintSettings): Record<string, unknown> {
-  // Map AI output to Bambu Studio's native JSON key names
+  // Start from the real Bambu Studio template (538 keys) and override with AI values
+  const config = JSON.parse(JSON.stringify(bambuTemplate)) as Record<string, unknown>
+
   const nozzleTemp = String(s.nozzle_temp || 220)
   const bedTemp = String(s.bed_temp || 60)
-  const layerHeight = Number(s.layer_height) || 0.2
-  const firstLayerHeight = Number(s.first_layer_height) || 0.2
-  const wallLoops = Number(s.wall_count) || 4
-  const topLayers = Number(s.top_layers) || 5
-  const bottomLayers = Number(s.bottom_layers) || 5
-  const infillDensity = String(s.infill_density || 15) + '%'
-  const infillPattern = String(s.infill_pattern || 'cubic')
-  const printSpeed = String(s.print_speed || 200)
+  const fanSpeed = String(s.cooling_fan_speed || 70)
   const outerWallSpeed = String(s.outer_wall_speed || 150)
   const innerWallSpeed = String(s.inner_wall_speed || 200)
   const infillSpeed = String(s.infill_speed || 200)
   const travelSpeed = String(s.travel_speed || 400)
   const firstLayerSpeed = String(s.first_layer_speed || 50)
-  const fanSpeed = String(s.cooling_fan_speed || 70)
-  const supportEnabled = s.support_enabled ? '1' : '0'
-  const supportType = String(s.support_type || 'tree(auto)')
-  const supportAngle = String(s.support_angle || 30)
   const retractionDist = String(s.retraction_distance || 0.8)
   const retractionSpeed = String(s.retraction_speed || 30)
   const zHop = String(s.z_hop || 0.4)
+  const infillDensity = String(s.infill_density || 15) + '%'
 
-  return {
-    layer_height: layerHeight,
-    initial_layer_print_height: firstLayerHeight,
-    wall_loops: wallLoops,
-    top_shell_layers: topLayers,
-    bottom_shell_layers: bottomLayers,
-    sparse_infill_density: infillDensity,
-    sparse_infill_pattern: infillPattern,
-    outer_wall_speed: [outerWallSpeed, outerWallSpeed],
-    inner_wall_speed: [innerWallSpeed, innerWallSpeed],
-    sparse_infill_speed: [infillSpeed, infillSpeed],
-    travel_speed: [travelSpeed, travelSpeed],
-    initial_layer_speed: [firstLayerSpeed, firstLayerSpeed],
-    initial_layer_infill_speed: [firstLayerSpeed, firstLayerSpeed],
-    nozzle_temperature: [nozzleTemp],
-    nozzle_temperature_initial_layer: [nozzleTemp],
-    hot_plate_temp: [bedTemp],
-    hot_plate_temp_initial_layer: [bedTemp],
-    textured_plate_temp: [bedTemp],
-    textured_plate_temp_initial_layer: [bedTemp],
-    cool_plate_temp: [bedTemp],
-    cool_plate_temp_initial_layer: [bedTemp],
-    fan_max_speed: [fanSpeed],
-    fan_min_speed: [fanSpeed],
-    enable_support: supportEnabled,
-    support_type: supportType,
-    support_threshold_angle: supportAngle,
-    retraction_length: [retractionDist],
-    retraction_speed: [retractionSpeed],
-    z_hop: [zHop],
-    z_hop_types: ['Auto Lift'],
-    nozzle_diameter: ['0.4'],
-    // Mark these as different from system defaults so slicer loads them
-    different_settings_to_system: [
-      'layer_height;wall_loops;top_shell_layers;bottom_shell_layers;sparse_infill_density;sparse_infill_pattern;enable_support;support_type;support_threshold_angle',
-      '',
-    ],
-  }
+  // Print settings
+  config.layer_height = Number(s.layer_height) || 0.2
+  config.initial_layer_print_height = Number(s.first_layer_height) || 0.2
+  config.wall_loops = Number(s.wall_count) || 4
+  config.top_shell_layers = String(Number(s.top_layers) || 5)
+  config.bottom_shell_layers = String(Number(s.bottom_layers) || 5)
+  config.sparse_infill_density = infillDensity
+  config.sparse_infill_pattern = String(s.infill_pattern || 'cubic')
+
+  // Speeds (arrays for multi-extruder compat)
+  config.outer_wall_speed = [outerWallSpeed, outerWallSpeed]
+  config.inner_wall_speed = [innerWallSpeed, innerWallSpeed]
+  config.sparse_infill_speed = [infillSpeed, infillSpeed]
+  config.travel_speed = [travelSpeed, travelSpeed]
+  config.initial_layer_speed = [firstLayerSpeed, firstLayerSpeed]
+  config.initial_layer_infill_speed = [firstLayerSpeed, firstLayerSpeed]
+
+  // Temperatures — filament arrays (1 filament)
+  config.nozzle_temperature = [nozzleTemp]
+  config.nozzle_temperature_initial_layer = [nozzleTemp]
+  config.hot_plate_temp = [bedTemp]
+  config.hot_plate_temp_initial_layer = [bedTemp]
+  config.textured_plate_temp = [bedTemp]
+  config.textured_plate_temp_initial_layer = [bedTemp]
+  config.cool_plate_temp = [bedTemp]
+  config.cool_plate_temp_initial_layer = [bedTemp]
+
+  // Cooling
+  config.fan_max_speed = [fanSpeed]
+  config.fan_min_speed = [fanSpeed]
+
+  // Support
+  config.enable_support = s.support_enabled ? '1' : '0'
+  config.support_type = String(s.support_type || 'tree(auto)')
+  config.support_threshold_angle = String(s.support_angle || 30)
+
+  // Retraction
+  config.retraction_length = [retractionDist]
+  config.retraction_speed = [retractionSpeed]
+  config.z_hop = [zHop]
+  config.z_hop_types = ['Auto Lift']
+
+  // Tell slicer which settings were customized
+  config.different_settings_to_system = [
+    'layer_height;wall_loops;top_shell_layers;bottom_shell_layers;sparse_infill_density;sparse_infill_pattern;enable_support;support_type;support_threshold_angle;outer_wall_speed;inner_wall_speed;sparse_infill_speed;travel_speed;initial_layer_speed;retraction_length;retraction_speed;z_hop;fan_max_speed;fan_min_speed',
+    '',
+  ]
+
+  return config
 }
 
 function buildBambuModelSettings(stlFilename: string, triangleCount: number): string {
