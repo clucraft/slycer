@@ -1,0 +1,23 @@
+services:
+  backend:
+    image: ghcr.io/clucraft/slycer-backend:latest
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3.5:35b}
+    volumes:
+      - backend-output:/app/output
+    restart: unless-stopped
+
+  frontend:
+    image: ghcr.io/clucraft/slycer-frontend:latest
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-output:
