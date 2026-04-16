@@ -49,6 +49,7 @@ optimizeRouter.post('/optimize', upload.single('stl'), async (req, res) => {
     const outputFilename = `${path.parse(req.file.originalname).name}_optimized.3mf`
     const outputPath = await build3MF({
       stlPath: req.file.path,
+      stlFilename: req.file.originalname,
       settings,
       slicer,
       outputFilename,
