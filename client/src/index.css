@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base dark theme */
+body {
+  @apply bg-surface-900 text-zinc-200;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-surface-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-surface-600 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-zinc-600;
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-900;
+  }
+
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-500 focus:ring-primary-500 shadow-lg shadow-primary-600/20;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-700 text-zinc-200 hover:bg-surface-600 focus:ring-zinc-500 border border-surface-600;
+  }
+
+  .input {
+    @apply block w-full rounded-lg border border-surface-600 bg-surface-800 px-3 py-2 text-zinc-200 placeholder-zinc-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-zinc-400 mb-1;
+  }
+
+  .card {
+    @apply bg-surface-800/80 backdrop-blur-sm rounded-lg border border-surface-600 p-6;
+  }
+
+  /* Glow effects */
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px currentColor;
+  }
+}
