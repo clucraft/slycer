@@ -19,6 +19,8 @@ export interface PrintSettings {
 export async function generateSettings(request: OptimizeRequest): Promise<PrintSettings> {
   const prompt = buildPrompt(request)
 
+  console.log(`Calling Ollama at ${OLLAMA_URL} with model ${OLLAMA_MODEL}...`)
+
   const response = await axios.post(`${OLLAMA_URL}/api/generate`, {
     model: OLLAMA_MODEL,
     prompt,
@@ -26,14 +28,63 @@ export async function generateSettings(request: OptimizeRequest): Promise<PrintS
     format: 'json',
     options: {
       temperature: 0.3,
-      num_predict: 2048,
+      num_predict: 4096,
     },
+  }, {
+    timeout: 300000, // 5 min timeout for slow inference
   })
 
-  const rawText = response.data.response
-  const settings = JSON.parse(rawText) as PrintSettings
+  const rawText: string = response.data.response || ''
+  console.log('Ollama raw response length:', rawText.length)
+  console.log('Ollama raw response (first 500 chars):', rawText.substring(0, 500))
 
+  if (!rawText.trim()) {
+    throw new Error('Ollama returned an empty response')
+  }
+
+  const settings = extractJSON(rawText)
   return settings
+}
+
+function extractJSON(text: string): PrintSettings {
+  // Try direct parse first
+  try {
+    return JSON.parse(text) as PrintSettings
+  } catch {
+    // Continue to extraction attempts
+  }
+
+  // Strip thinking tags (Qwen3.5 may wrap output in <think>...</think>)
+  let cleaned = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim()
+
+  // Strip markdown code fences
+  cleaned = cleaned.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim()
+
+  // Try parsing cleaned text
+  try {
+    return JSON.parse(cleaned) as PrintSettings
+  } catch {
+    // Continue to brace extraction
+  }
+
+  // Extract first JSON object by finding matching braces
+  const start = cleaned.indexOf('{')
+  if (start !== -1) {
+    let depth = 0
+    for (let i = start; i < cleaned.length; i++) {
+      if (cleaned[i] === '{') depth++
+      else if (cleaned[i] === '}') depth--
+      if (depth === 0) {
+        try {
+          return JSON.parse(cleaned.substring(start, i + 1)) as PrintSettings
+        } catch {
+          break
+        }
+      }
+    }
+  }
+
+  throw new Error(`Failed to parse JSON from Ollama response: ${text.substring(0, 200)}...`)
 }
 
 function buildPrompt(req: OptimizeRequest): string {
