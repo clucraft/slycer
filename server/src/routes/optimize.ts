@@ -3,7 +3,10 @@ import multer from 'multer'
 import path from 'path'
 import { analyzeSTL } from '../services/meshAnalyzer.js'
 import { generateSettings } from '../services/aiOptimizer.js'
+import type { Priority } from '../services/baselines.js'
 import { build3MF } from '../services/threemfBuilder.js'
+
+const VALID_PRIORITIES: Priority[] = ['quality', 'strength', 'speed', 'balanced']
 
 const upload = multer({
   dest: 'uploads/',
@@ -26,12 +29,14 @@ optimizeRouter.post('/optimize', upload.single('stl'), async (req, res) => {
       return
     }
 
-    const { printer, nozzle, material, slicer } = req.body
+    const { printer, nozzle, material, slicer, priority } = req.body
 
     if (!printer || !nozzle || !material || !slicer) {
       res.status(400).json({ error: 'Missing required fields: printer, nozzle, material, slicer' })
       return
     }
+
+    const resolvedPriority: Priority = VALID_PRIORITIES.includes(priority) ? priority : 'balanced'
 
     // Step 1: Analyze STL mesh geometry
     const meshAnalysis = await analyzeSTL(req.file.path)
@@ -43,6 +48,7 @@ optimizeRouter.post('/optimize', upload.single('stl'), async (req, res) => {
       nozzle: parseFloat(nozzle),
       material,
       slicer,
+      priority: resolvedPriority,
     })
 
     // Step 3: Build 3MF with optimized settings

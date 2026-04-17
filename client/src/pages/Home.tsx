@@ -74,6 +74,13 @@ const SLICERS = [
   { value: 'cura', label: 'Cura' },
 ]
 
+const PRIORITIES = [
+  { value: 'balanced', label: 'Balanced', description: 'Good all-around defaults' },
+  { value: 'quality', label: 'Quality', description: 'Best surface finish & detail' },
+  { value: 'strength', label: 'Strength', description: 'Maximum mechanical strength' },
+  { value: 'speed', label: 'Speed', description: 'Fastest print time' },
+]
+
 type Status = 'idle' | 'uploading' | 'processing' | 'done' | 'error'
 
 export default function Home() {
@@ -82,6 +89,7 @@ export default function Home() {
   const [nozzle, setNozzle] = useState('0.4')
   const [material, setMaterial] = useState('pla')
   const [slicer, setSlicer] = useState('orcaslicer')
+  const [priority, setPriority] = useState('balanced')
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState('')
   const [downloadUrl, setDownloadUrl] = useState('')
@@ -126,6 +134,7 @@ export default function Home() {
     formData.append('nozzle', nozzle)
     formData.append('material', material)
     formData.append('slicer', slicer)
+    formData.append('priority', priority)
 
     try {
       setStatus('processing')
@@ -222,6 +231,30 @@ export default function Home() {
               ))}
             </select>
           </div>
+        </div>
+      </div>
+
+      {/* Priority selector */}
+      <div className="card">
+        <h2 className="text-lg font-semibold text-zinc-200 mb-4">Optimization Priority</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {PRIORITIES.map((p) => (
+            <button
+              key={p.value}
+              type="button"
+              onClick={() => setPriority(p.value)}
+              className={`p-4 rounded-lg border transition-all text-left ${
+                priority === p.value
+                  ? 'bg-primary-600/20 border-primary-500/50 glow-primary'
+                  : 'bg-surface-900/50 border-surface-600 hover:border-primary-500/30'
+              }`}
+            >
+              <div className={`text-sm font-semibold mb-1 ${priority === p.value ? 'text-primary-400' : 'text-zinc-200'}`}>
+                {p.label}
+              </div>
+              <div className="text-xs text-zinc-500">{p.description}</div>
+            </button>
+          ))}
         </div>
       </div>
 
